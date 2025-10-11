@@ -7,6 +7,7 @@ from typing import List, Tuple
 #TODO: 插入文本的规则需要改进，可能会包含STOP_CHARS,需要一个专用停止符号“；”
 #TODO: 也许应该简化火的处理？输入时输入/h意味着显示的火，输入/hd意味时值减半但不渲染该字符，删去火链的逻辑处理
 #TODO: 使用<>添加一个扫弦连音符号判定，归类为textunit    
+#TODO: 别忘了把反拨符号加上
 #FIXED: 调整规则顺序
 
 
