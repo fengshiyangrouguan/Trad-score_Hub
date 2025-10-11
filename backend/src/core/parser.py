@@ -50,7 +50,7 @@ class ScoreParser:
         modifiers_to_space = [
             '{', '}',                   # 结构符
             '/y', '/h',                 # 时值修饰符
-            '/b', '/zp', '/yp', '/r',   # 节奏修饰符
+            '/b', '/pz', '/py', '/r',   # 节奏修饰符
         ]
 
         # 符号空格分隔
@@ -142,9 +142,9 @@ class ScoreParser:
             
         # 4. 节奏/排版相关的修饰符(以后再使用map移除硬编码)
         if token_type == 'RHYTHM_MOD':
-            if content in ['/b', '/yp']: 
+            if content in ['/b', '/py']: 
                 unit.right_rhythm_modifier = content
-            elif content in ['/zp', '/r']:
+            elif content in ['/pz', '/r']:
                 unit.bottom_rhythm_modifier = content
 
         # 3. 小字号/时值修饰符 (SUB_CHAR)

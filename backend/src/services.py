@@ -3,6 +3,7 @@ from typing import Literal, List, Union
 from .domain.models import TextUnit, ScoreUnit, ScoreDocument
 from .core.parser import ScoreParser
 from .converters.termuxed_generator import TermuxedGenerator
+from .converters.png_generator import PNGGenerator
 
 
 class ScoreService:
@@ -17,6 +18,7 @@ class ScoreService:
         self.parser = ScoreParser()
         # 实例化不同的生成器/导出器
         self.termuxed_generator = TermuxedGenerator()
+        self.png_generator = PNGGenerator()
 
     def process_parsing(self, full_score_text: str) -> ScoreDocument:
         """
@@ -52,7 +54,7 @@ class ScoreService:
         if format == 'debug':
             return self.termuxed_generator.generate_output(score_model)
         elif format == 'png':
-            return self.png_generator.generate_image(score_model)
+            return self.png_generator.generate_scoredocument_image(score_model)
 
     def debug_print_document(self, score_document: ScoreDocument):
         """
@@ -74,16 +76,16 @@ def test_service():
 % 来源: 三五要录
 = This is a sample score with mixed content.
 【入破第一】
-{二}
-{也/zp}
+{二/py}
+{也/pz}
 {七}
-{言（七言）/zp}
+{言（七言）/pz}
 {一/y/b}
 {之}
-{四/zp}
+{四/pz}
 {之}
 {合（八）/h}
-{之/h/zp}
+{之/h/pz}
 """
     )
     
@@ -98,6 +100,8 @@ def test_service():
         
         print(f"解析完成。元素数量: {len(score_document_model.elements)}")
         service.debug_print_document(score_document_model)
+        service.process_export(score_document_model, 'png')
+        print("PNG 导出完成。")
 
     except Exception as e:
         print(f"处理错误: {e}")

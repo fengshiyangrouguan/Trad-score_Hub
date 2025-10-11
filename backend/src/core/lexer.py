@@ -6,6 +6,8 @@ from typing import List, Tuple
 #TODO: 需要增加对错误输入的处理和报告机制
 #TODO: 插入文本的规则需要改进，可能会包含STOP_CHARS,需要一个专用停止符号“；”
 #TODO: 也许应该简化火的处理？输入时输入/h意味着显示的火，输入/hd意味时值减半但不渲染该字符，删去火链的逻辑处理
+#TODO: 使用<>添加一个扫弦连音符号判定，归类为textunit    
+#FIXED: 调整规则顺序
 
 
 # TOKEN规则配置
@@ -35,12 +37,12 @@ SCORE_RULES: List[Tuple[str, str, int]] = [
     # 匹配主音符: 所有琵琶谱使用谱字加一个休止符（丁）
     ('MAIN_CHAR', r'^(一|二|三|四|五|六|七|八|九|十|匕|卜|敷|乙|言|合|斗|乞|之|也|丁)', re.IGNORECASE),
 
+    # 匹配节奏修饰符: '百:/b', '。:/zp', ',:/yp', '-:/r', 以及标准符号
+    ('RHYTHM_MOD', r'^(\/b|\/pz|\/py|\/r)', re.IGNORECASE), 
+
     # 匹配时值修饰符: '引:/y', '火:/h'
     ('TIME_MOD', r'^(\/y|\/h)', re.IGNORECASE), # 增加标准符号的兼容性
-    
-    # 匹配节奏修饰符: '百:/b', '。:/zp', ',:/yp', '-:/r', 以及标准符号
-    ('RHYTHM_MOD', r'^(\/b|\/zp|\/yp|\/r)', re.IGNORECASE), 
-    
+   
     # 匹配小字号音符组: 必须是 (内容) 或 （内容）
     ('SUB_CHAR', r'^[（\(]([^（\）\(\)]*?)[）\)]', re.IGNORECASE),
 ]
@@ -70,7 +72,7 @@ class Lexer:
             self.compiled_rules.append((name, re.compile(pattern, flags)))
 
         # 定义需要从 group(1) 提取内容的 Token 类型列表
-        self.GROUP_1_CONTENT_TOKENS = [r[0] for r in TEXT_RULES] + ['SUB_CHAR']
+        self.GROUP_1_CONTENT_TOKENS = [r[0] for r in TEXT_RULES] + ['SUB_CHAR', 'RHYTHM_MOD', 'TIME_MOD']
 
     def tokenize(self, text: str) -> List[Tuple[str, str]]:
         """
