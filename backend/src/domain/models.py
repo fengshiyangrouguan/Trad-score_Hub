@@ -3,6 +3,18 @@
 from typing import List, Any, Dict, Optional,Union
 from dataclasses import dataclass, field,asdict
 
+@dataclass
+class MetaUnit:
+    """
+    存储本乐谱的基本信息
+    """
+    title: str          # 标题
+    source: str         # 源
+    mode: str           # 调式
+    transcriber: str    # 录入者
+    proofreader: str    # 审校
+    date: str           # 录入日期
+
 
 @dataclass
 class TextUnit:

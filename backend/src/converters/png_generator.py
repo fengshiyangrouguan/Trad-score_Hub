@@ -46,7 +46,7 @@ class PNGGenerator:
         try:
             self.main_font = ImageFont.truetype(font_path, self.char_size)
             self.sub_font = ImageFont.truetype(font_path, self.sub_char_size)
-            print(f"PNGGenerator 初始化成功，已加载字体: {font_path}")
+            print(f"PNGGenerator 初始化成功，已加载字体 : {font_path}")
         except IOError:
             print(f"错误：无法加载字体文件 '{font_path}'。请确保路径正确且文件存在。")
             raise
