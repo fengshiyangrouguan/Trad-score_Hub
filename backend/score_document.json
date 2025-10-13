@@ -1,0 +1,230 @@
+{
+  "title": "凉州",
+  "mode": "沙陀调",
+  "source": "三五要录",
+  "transcriber": "冯氏羊肉馆",
+  "proofreader": "冯氏羊肉馆",
+  "date": "2025.10.12",
+  "elements": [
+    {
+      "type": "COMMENT",
+      "text": "简单测试一下注释，冯氏羊肉馆冯氏羊肉馆"
+    },
+    {
+      "title": "入破第一",
+      "mode": "沙陀调",
+      "elements": [
+        {
+          "main_score_character": "二",
+          "modifiers": []
+        },
+        {
+          "main_score_character": "也",
+          "modifiers": [
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "七",
+          "modifiers": []
+        },
+        {
+          "main_score_character": "言",
+          "modifiers": [
+            "七言",
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "一",
+          "modifiers": [
+            "/y",
+            "/b"
+          ]
+        },
+        {
+          "main_score_character": "之",
+          "modifiers": []
+        },
+        {
+          "main_score_character": "四",
+          "modifiers": [
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "之",
+          "modifiers": []
+        },
+        {
+          "main_score_character": "合",
+          "modifiers": [
+            "八",
+            "/h"
+          ]
+        },
+        {
+          "main_score_character": "之",
+          "modifiers": [
+            "/h",
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "七",
+          "modifiers": [
+            "三七"
+          ]
+        },
+        {
+          "main_score_character": "之",
+          "modifiers": [
+            "/h"
+          ]
+        },
+        {
+          "main_score_character": "四",
+          "modifiers": [
+            "/h",
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "言",
+          "modifiers": [
+            "七言",
+            "/b"
+          ]
+        },
+        {
+          "main_score_character": "言",
+          "modifiers": [
+            "/h"
+          ]
+        },
+        {
+          "main_score_character": "言",
+          "modifiers": [
+            "七",
+            "/h",
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "言",
+          "modifiers": [
+            "七言"
+          ]
+        },
+        {
+          "main_score_character": "八",
+          "modifiers": [
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "五",
+          "modifiers": []
+        },
+        {
+          "main_score_character": "八",
+          "modifiers": [
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "二",
+          "modifiers": []
+        },
+        {
+          "main_score_character": "也",
+          "modifiers": [
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "言",
+          "modifiers": [
+            "七",
+            "/b"
+          ]
+        },
+        {
+          "main_score_character": "七",
+          "modifiers": [
+            "/h"
+          ]
+        },
+        {
+          "main_score_character": "七",
+          "modifiers": [
+            "三",
+            "/h",
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "七",
+          "modifiers": [
+            "三七",
+            "/y",
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "之",
+          "modifiers": []
+        },
+        {
+          "main_score_character": "四",
+          "modifiers": [
+            "/h"
+          ]
+        },
+        {
+          "main_score_character": "七",
+          "modifiers": [
+            "三",
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "二",
+          "modifiers": []
+        },
+        {
+          "main_score_character": "也",
+          "modifiers": [
+            "/h"
+          ]
+        },
+        {
+          "main_score_character": "七",
+          "modifiers": [
+            "三",
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "二",
+          "modifiers": [
+            "/b"
+          ]
+        },
+        {
+          "main_score_character": "也",
+          "modifiers": [
+            "/pz"
+          ]
+        },
+        {
+          "main_score_character": "也",
+          "modifiers": [
+            "/y",
+            "/r"
+          ]
+        }
+      ]
+    }
+  ]
+}
