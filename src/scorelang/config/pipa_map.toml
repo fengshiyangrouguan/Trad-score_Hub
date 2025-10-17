@@ -1,0 +1,153 @@
+
+# =========================================
+# 语义分发配置
+# =========================================
+
+[parser_dispatch]
+document_meta = "_handle_document_meta"
+mode = "_handle_mode"
+section = "_handle_section"
+control = "_handle_control"
+textunit = "_handle_text_unit"
+
+main_char = "_handle_main_char"
+time_modifier = "_handle_time_modifier"
+small_modifier = "_handle_small_modifier"
+right_rhythm_modifier = "_handle_right_rhythm_modifier"
+bottom_rhythm_modifier = "_handle_bottom_rhythm_modifier"
+
+
+# =========================================
+# 文档元数据分发配置
+# =========================================
+
+[document_meta_map]
+来源 = "source"
+录入 = "transcriber"
+审校 = "proofreader"
+日期 = "date"
+
+# =========================================
+# 时值修饰符配置
+# =========================================
+
+[duration_modifier_map]
+"/y" = 2.0  # 注意：在TOML中，数字不能作为键，字符串可以
+"/h" = 0.5
+"/hh" = 0.5
+
+
+# =========================================
+# TOKEN配置
+# =========================================
+
+# -----------------------------------------
+# 乐段 / Section
+# -----------------------------------------
+
+[[TOKENS]]
+name = "SECTION"
+pattern = "^##\\s*(.+)"
+flags = "IGNORECASE"
+semantic = "section"
+group1 = true
+
+# -----------------------------------------
+# 文档元数据
+# -----------------------------------------
+
+[[TOKENS]]
+name = "SCORE_DOCUMENT"
+pattern = "^#\\s*(.+)"
+flags = "IGNORECASE"
+semantic = "document_meta"
+group1 = true
+
+[[TOKENS]]
+name = "MODE"
+pattern = "^@\\s*(.+)"
+flags = "IGNORECASE"
+semantic = "mode"
+group1 = true
+
+[[TOKENS]]
+name = "DOCUMENT_META"
+pattern = "^%\\s*(.+?)：\\s*(.+)"
+flags = "IGNORECASE"
+semantic = "document_meta"
+group1 = true   # 字段名，例如 来源、录入、审校、日期
+group2 = true   # 字段值，例如 三五要录、张三、李四、2025-10-12
+
+
+# -----------------------------------------
+# 乐谱符号类
+# -----------------------------------------
+
+[[TOKENS]]
+name = "RIGHT_RHYTHM_MOD"
+pattern = "^(\\/py|\\/b)"
+flags = "IGNORECASE"
+semantic = "right_rhythm_modifier"
+
+
+[[TOKENS]]
+name = "BOTTOM_RHYTHM_MOD"
+pattern = "^(\\/pz|\\/r)"
+flags = "IGNORECASE"
+semantic = "bottom_rhythm_modifier"
+
+
+[[TOKENS]]
+name = "TIME_MOD"
+pattern = "^(\\/y|\\/hh|\\/h)"
+flags = "IGNORECASE"
+semantic = "time_modifier"
+
+
+[[TOKENS]]
+name = "SUB_CHAR"
+pattern = "^[（\\(](.+)[）\\)]"
+flags = "IGNORECASE"
+semantic = "small_modifier"
+group1 = true
+
+[[TOKENS]]
+name = "MAIN_CHAR"
+pattern = "^(一|二|三|四|五|六|七|八|九|十|匕|卜|敷|乙|言|合|斗|乞|之|也|丁)"
+semantic = "main_char"
+flags = "IGNORECASE"
+
+# -----------------------------------------
+# 注释 / 文本
+# -----------------------------------------
+
+[[TOKENS]]
+name = "COMMENT"
+pattern = "^=\\s*(.+)"
+flags = "IGNORECASE"
+semantic = "textunit"
+group1 = true
+
+
+# -----------------------------------------
+# 状态机配置 / 结构符号
+# -----------------------------------------
+
+[[TOKENS]]
+name = "UNIT_START"
+pattern = "^{"
+flags = "IGNORECASE"
+semantic = "control"
+state_push = "scoreunit"  # 进入新状态
+
+[[TOKENS]]
+name = "UNIT_END"
+pattern = "^}"
+flags = "IGNORECASE"
+semantic = "control"
+state_pop = true  # 退出当前状态
+
+[[TOKENS]]
+name = "SKIP_SPACE"
+pattern = "^\\s+"
+flags = "IGNORECASE"

@@ -1,0 +1,327 @@
+{
+  "title": "凉州",
+  "mode": "沙陀调",
+  "source": "三五要录",
+  "transcriber": "冯氏羊肉馆",
+  "proofreader": "冯氏羊肉馆",
+  "date": "2025.10.12",
+  "elements": [
+    {
+      "type": "COMMENT",
+      "text": "简单测试一下注释，冯氏羊肉馆冯氏羊肉馆"
+    },
+    {
+      "title": "入破第一",
+      "mode": "沙陀调",
+      "elements": [
+        {
+          "main_score_character": "二",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "也",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 1.0
+        },
+        {
+          "main_score_character": "七",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "言",
+          "small_modifier": [
+            "七",
+            "言"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 1.0
+        },
+        {
+          "main_score_character": "一",
+          "small_modifier": [],
+          "time_modifier": "/y",
+          "right_rhythm_modifier": "/b",
+          "bottom_rhythm_modifier": null,
+          "time": 2.0
+        },
+        {
+          "main_score_character": "之",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "四",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 1.0
+        },
+        {
+          "main_score_character": "之",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "合",
+          "small_modifier": [
+            "八"
+          ],
+          "time_modifier": "/h",
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 0.5
+        },
+        {
+          "main_score_character": "之",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 0.5
+        },
+        {
+          "main_score_character": "七",
+          "small_modifier": [
+            "三",
+            "七"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "之",
+          "small_modifier": [],
+          "time_modifier": "/h",
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 0.5
+        },
+        {
+          "main_score_character": "四",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 0.5
+        },
+        {
+          "main_score_character": "言",
+          "small_modifier": [
+            "七",
+            "言"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": "/b",
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "言",
+          "small_modifier": [],
+          "time_modifier": "/h",
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 0.5
+        },
+        {
+          "main_score_character": "言",
+          "small_modifier": [
+            "七"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 0.5
+        },
+        {
+          "main_score_character": "言",
+          "small_modifier": [
+            "七",
+            "言"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "八",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 1.0
+        },
+        {
+          "main_score_character": "五",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "八",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 1.0
+        },
+        {
+          "main_score_character": "二",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "也",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 1.0
+        },
+        {
+          "main_score_character": "言",
+          "small_modifier": [
+            "七"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": "/b",
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "七",
+          "small_modifier": [],
+          "time_modifier": "/h",
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 0.5
+        },
+        {
+          "main_score_character": "七",
+          "small_modifier": [
+            "三"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 0.5
+        },
+        {
+          "main_score_character": "七",
+          "small_modifier": [
+            "三",
+            "七"
+          ],
+          "time_modifier": "/y",
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 2.0
+        },
+        {
+          "main_score_character": "之",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "四",
+          "small_modifier": [],
+          "time_modifier": "/h",
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 0.5
+        },
+        {
+          "main_score_character": "七",
+          "small_modifier": [
+            "三"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 0.5
+        },
+        {
+          "main_score_character": "二",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "也",
+          "small_modifier": [],
+          "time_modifier": "/h",
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": null,
+          "time": 0.5
+        },
+        {
+          "main_score_character": "七",
+          "small_modifier": [
+            "三"
+          ],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 0.5
+        },
+        {
+          "main_score_character": "二",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": "/b",
+          "bottom_rhythm_modifier": null,
+          "time": 1.0
+        },
+        {
+          "main_score_character": "也",
+          "small_modifier": [],
+          "time_modifier": null,
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/pz",
+          "time": 1.0
+        },
+        {
+          "main_score_character": "也",
+          "small_modifier": [],
+          "time_modifier": "/y",
+          "right_rhythm_modifier": null,
+          "bottom_rhythm_modifier": "/r",
+          "time": 2.0
+        }
+      ]
+    }
+  ]
+}
