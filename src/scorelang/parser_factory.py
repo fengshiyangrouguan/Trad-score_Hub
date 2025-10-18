@@ -1,6 +1,5 @@
-# scorelang/core/parser_factory.py
-
 from typing import TypeVar
+
 from .parsers.pipa_parser import PipaParser
 from .parsers.base_parser import BaseParser
 

@@ -1,17 +1,16 @@
-# scorelang/core/visitor_manager.py
-
 import importlib
 from typing import Dict, Any
+
 from src.scorelang.ast_score.nodes import ScoreDocumentNode
 from src.scorelang.visitors.base_visitor import BaseVisitor # 假设你已定义这个基类
 
-# 现硬编码
-# 在实际项目中，你可能在 __init__ 或配置中心加载它
+
+# TODO:# 现硬编码,可能在 __init__ 或配置中心加载它
 PIPELINE_CONFIG: Dict[str, Any] = {
     "pipa": {
         "visitors": [
-            "src.scorelang.visitors.pipa_analysis_visitor.PipaTheoryAnalysisPass",
-            # "scorelang.visitors.pipa_layout_pass.PipaLayoutPass", # 占位
+            "src.scorelang.visitors.pipa_analysis_pass.PipaTheoryAnalysisPass",
+            "src.scorelang.visitors.pipa_layout_pass.PipaLayoutPass", # 占位
         ],
         "renderers": {
             #"svg": "scorelang.renderers.pipa_svg_renderer.PipaSVGRenderer",
@@ -63,7 +62,8 @@ class VisitorManager:
                 
                 # 3. 获取 Visitor 类对象
                 VisitorClass = getattr(module, class_name)
-            
+
+                # TODO这里将配置字典作为参数传递给 Visitor 的 __init__ 方法
                 # 5. 实例化并运行 Visitor Pass
                 visitor_instance: BaseVisitor = VisitorClass()
                 print(f"   -> Executing Pass: {class_name}...")

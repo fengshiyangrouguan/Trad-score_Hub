@@ -32,7 +32,7 @@ bottom_rhythm_modifier = "_handle_bottom_rhythm_modifier"
 # =========================================
 
 [duration_modifier_map]
-"/y" = 2.0  # 注意：在TOML中，数字不能作为键，字符串可以
+"/y" = 2.0
 "/h" = 0.5
 "/hh" = 0.5
 

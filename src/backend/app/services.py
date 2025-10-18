@@ -18,7 +18,7 @@ class ScoreService:
         # 初始化时加载配置，以便后续使用
         self.visitor_manager = VisitorManager
 
-    def process_parsing(self, score_text: str, score_type: str) -> ScoreDocumentNode:
+    def process_score(self, score_text: str, score_type: str) -> ScoreDocumentNode:
         """
         核心管道方法：解析文本，运行所有语义 Visitor，返回处理后的 AST。
         """

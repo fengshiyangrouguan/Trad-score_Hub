@@ -56,7 +56,7 @@ def main():
     service = ScoreService()
 
     # 解析成 AST
-    score_document: ScoreDocumentNode = service.process_parsing(sample_score_text,"pipa")
+    score_document: ScoreDocumentNode = service.process_score(sample_score_text,"pipa")
 
     # 3️⃣ 输出到控制台
     print("=== AST ===")
