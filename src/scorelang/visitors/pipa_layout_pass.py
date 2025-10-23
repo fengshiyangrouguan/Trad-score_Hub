@@ -1,15 +1,11 @@
 import logging
+import math
 from typing import Dict, Tuple, Optional
-from src.scorelang.visitors.base_visitor import BaseVisitor
-# 假设的 AST 节点
-from src.scorelang.ast_score.nodes import ScoreDocumentNode, SectionNode, ScoreUnitNode, TextRenderInfo
-from src.scorelang.config.layout_config import PipaLayoutConfig
-# 初始化 Logger
 
-# --- 假设的全局排版常量 (在实际项目中应从配置文件加载) ---
-COLUMN_SPACING = 50.0   # 列间距
-UNIT_NUM = 4       # 硬编码 每一列的只拍子单元数量
-
+from ..visitors.base_visitor import BaseVisitor
+from ..ast_score.nodes import ScoreDocumentNode, SectionNode, ScoreUnitNode, TextNode
+from ..config.layout_config import PipaLayoutConfig
+#TODO: 初始化 Logger
 
 class PipaLayoutPass(BaseVisitor):
     """
@@ -24,8 +20,8 @@ class PipaLayoutPass(BaseVisitor):
     
     def __init__(
             self, 
-            page_dimensions: Tuple[int, int] = (2160, 1280), 
-            margin: Dict[str, int] = {
+            page_dimensions = (2160, 1280), 
+            margin: Dict[str, float] = {
                 "top": 20, 
                 "left": 20, 
                 "right": 20, 
@@ -38,21 +34,28 @@ class PipaLayoutPass(BaseVisitor):
         self.page_dimensions = page_dimensions
         self.margin = margin
         self.layout_config = PipaLayoutConfig()
-        # 当前排版流程的 X/Y 起始点（注意：X从右往左递减）
+
         # current_x: 当前列的起始X坐标 (排版从右侧页边距开始)
-        self.current_x: int = page_dimensions[0] - margin['right']
+        self.current_x = self.page_dimensions[0] - self.margin['right']
         # current_y: 当前行内元素的起始Y坐标 (排版从顶部页边距开始)
-        self.current_y: int = margin['top']
+        self.current_y = self.margin['top']
         
         # 跟踪上一个元素占用的高度，以便在 Y 轴上堆叠
         self.last_element_height: float = 0.0
         
+        # 实际可用的y高度
         effective_y_height = (
-            self.page_dimensions[1] - margin['top'] - margin['bottom']
+            self.page_dimensions[1] - self.margin['top'] - self.margin['bottom']
         )
 
-        self.scoreunit_height = int(effective_y_height/ UNIT_NUM)
+        self.scoreunit_height = effective_y_height/ self.layout_config.UNIT_NUM
         self.scoreunit_counter: int = 0  # 计数当前列已排版的单元数量
+        self.time_counter: int = 0 # 用于排版的时值计数器
+        self.unit_temp_y = 0
+
+        #计算每列可容纳最大内容文本字数
+        self.text_column = effective_y_height - (2 * self.layout_config.main_char_space[1])
+        self.max_text_per_column = math.floor(self.text_column / self.layout_config.small_char_space[1])
         print("PipaLayoutPass initialized.")
 
 
@@ -101,10 +104,11 @@ class PipaLayoutPass(BaseVisitor):
         
         self.generic_visit(node)
         
-
     def visit_SectionNode(self, node: SectionNode):
         """处理乐部节点，设置起始 X/Y 坐标，并开始列排版。"""
         print(f"Visiting SectionNode: {node.title}")
+
+        header_width_acc = 0.0 # 页首总宽度累加器
         
         if node.title:
             title_w = self.layout_config.title_space[0]
@@ -112,7 +116,7 @@ class PipaLayoutPass(BaseVisitor):
             title_indentation = self.current_y + title_unit_h # 硬编码一格缩进
             # 1. 确定 Section 的起始 X/Y 坐标 (承接 Document 的流控)
             node.title_pos = (self.current_x, title_indentation)
-            self.current_x -= mode_w
+            self.current_x -= title_w
             header_width_acc += title_w
 
             # 3. 处理转调文本 (mode_display_flag)
@@ -130,55 +134,111 @@ class PipaLayoutPass(BaseVisitor):
         node.width_dimension = header_width_acc
         self.generic_visit(node)
     
-
     def visit_ScoreUnitNode(self, node: ScoreUnitNode):
         """处理谱字单元，计算其绝对位置和内部组件的相对位置。"""
         # --- 1. 检查是否需要换列 (Column Break) ---
-        if self.unit_counter >= SCOREUNIT_NUM:
-            self._do_column_break(node)
+        if self.scoreunit_counter >= self.layout_config.UNIT_NUM:
+            self._do_column_break()
 
         # --- 2. 计算绝对定位和尺寸 ---
         
         # X 坐标：继承自当前 X (self.current_x)
-        unit_abs_x = self.current_x - self.layout_config.scoreunit_x_offset # 向左平移
+        self.current_x -= self.layout_config.scoreunit_x_offset # 向左平移
         # Y 坐标：继承自当前 Y (self.current_y)
-        unit_abs_y = self.current_y
-        
+
         # 尺寸：基于时值或固定单元宽度计算，并更新 self.last_element_height
         unit_width = self.layout_config.main_char_space[0]
         unit_height = self.scoreunit_height
         
-        node.main_char_pos = (unit_abs_x, unit_abs_y)
-        node.dimensions = (unit_width, unit_height)
+        # 设置主谱字位置
+        node.main_char_pos = (self.current_x, self.current_y)
         
-        # 计算小字组的相对位置 (依赖于数量和间距)
-        self.layout_small_modifiers(node, unit_width, unit_height)
-        
-        # ... (计算其他修饰符的相对位置) ...
+        # 缓存当前只拍子起始位置，用于当时值为整数时执行缩进
+        if self.time_counter == 0:
+            self.unit_temp_y = self.current_y
+
+        # 计算小谱字+引/火的位置
+        small_mod_y = self._layout_small_modifiers(node)
+
+        # 计算右边符号位置
+        self._layout_right_rhythm_modifier(node)
+
         
         # --- 3. 更新 X/Y 流控 ---
-        # Y 轴向下递增，准备下一个单元
-        self.current_y += unit_height 
-        self.unit_counter += 1  
-        # 竖排排版中，每处理一个单元，Y 坐标向下递增
-        self.current_y += unit_height 
-        self.last_element_height = unit_height
-        
-        # [TODO: 检查是否到达当前列底部，如果到达，则更新 self.current_x 和重置 self.current_y]
+        # 先计算时值累加
+        self.time_counter += node.time
 
-    def layout_small_modifiers(self, node: ScoreUnitNode, unit_width: float, unit_height: float):
+        # 从同一起点计算，防止float累计误差
+        if self.time_counter == 1:            
+            self.current_y = self.unit_temp_y + (unit_height * 0.4)
+        elif self.time_counter == 2:            
+            self.current_y = self.unit_temp_y + (unit_height * 0.8)
+        else:
+            self.current_y = small_mod_y
+
+        # 处理底部符号位置
+        self._layout_bottom_rhythm_modifier(node, unit_width, unit_height)
+
+        #TODO 如果想让只拍子或其他底部符号可以出现在一个只拍子内部，让layout_bottom_rhythm_modifier移到第二步中，返回一个偏移值（0.2unitheight），第三步里，如果存在则加上，不存在则返回0，
+
+        # 更新计数器
+        self.scoreunit_counter += 1  
+
+        return
+
+    def visit_TextNode(self,node: TextNode):
+        """处理文本单元，计算其绝对位置"""
+        text_indentation = self.current_y + (2 * self.layout_config.main_char_space[1]) # 硬编码两格缩进
+        node.position = (self.current_x, text_indentation)
+        total_texts = len(node.text)
+        total_columns = math.ceil(total_texts / self.max_text_per_column)
+        node.width_dimension = total_columns * self.layout_config.small_char_space[0]
+        self.current_x -= node.width_dimension
+        return
+    
+ 
+
+    def _layout_small_modifiers(self, node: ScoreUnitNode):
         """计算小字组的相对位置，并注入 AST"""
         
         # 假设所有小字都紧靠在主音符的左侧
-        fixed_x_offset = - (UNIT_WIDTH / 2 + 5.0) 
+        small_mod_x = self.current_x 
         
-        # Y 轴起始点：从小字的中心开始
-        start_y_offset = unit_height / 2 - (len(node.small_modifier) * SMALL_CHAR_FONT_SIZE / 2)
-        
-        node.small_mod_pos_offsets = []
-        current_y = start_y_offset
-        
-        for _ in node.small_modifier:
-            # 这里的 Y 坐标是相对于 unit_abs_y 的偏移
-            node.small_mod_pos_offsets.append((fixed_x_offset, current_y))
-            current_y += SMALL_CHAR_FONT_SIZE + SMALL_CHAR_SPACING_Y
+        # 初始化 Y 轴起始点：
+        small_mod_y = self.current_y + self.layout_config.main_char_space[1]
+
+        node.small_mod_pos = []
+        if node.small_modifier is not None:
+            for _ in node.small_modifier:
+                node.small_mod_pos.append((small_mod_x, small_mod_y))
+                small_mod_y += self.layout_config.small_char_space[1]
+        if node.time_modifier is not None:
+            for _ in node.time_modifier:
+                node.time_mod_pos = (small_mod_x,small_mod_y)
+                small_mod_y += self.layout_config.small_char_space[1]
+            
+        return small_mod_y
+
+    def _layout_bottom_rhythm_modifier(self, node: ScoreUnitNode, unit_width, unit_height):
+        """计算底部符号的相对位置，并注入 AST"""
+        if node.bottom_rhythm_modifier == None:
+            return
+        bottom_mod_x = self.current_x - (unit_width / 2)
+        bottom_mod_y = self.current_y + (unit_height * 0.1)
+        node.bottom_rhythm_mod_pos = (bottom_mod_x, bottom_mod_y)
+        self.current_y = self.unit_temp_y + unit_height
+        return
+ 
+    def _layout_right_rhythm_modifier(self,node: ScoreUnitNode):
+        """计算右边符号的相对位置，并注入 AST"""
+        right_mod_x = self.current_x + (0.5 * self.layout_config.scoreunit_x_offset)
+        right_mod_y = self.current_y + (0.5 * self.layout_config.main_char_size)
+
+        node.right_rhythm_mod_pos = (right_mod_x,right_mod_y)
+        return
+    
+    def _do_column_break(self):
+        self.current_x -= self.layout_config.main_char_space[0]
+
+        # 从页顶部开始
+        self.current_y = self.margin['top']

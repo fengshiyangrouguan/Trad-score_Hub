@@ -46,9 +46,9 @@ class ScoreUnitNode(Node):
     main_char_pos: Tuple[float, float] = field(default=(0.0, 0.0))
     small_mod_pos: List[Tuple[float, float]] = field(default_factory=list)
     time_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    right_rhythm_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))
+    right_rhythm_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))  # 注意！ 记录的是中心位置
     bottom_rhythm_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    dimensions: Tuple[float, float] = field(default=(0.0, 0.0))
+    #dimensions: Tuple[float, float] = field(default=(0.0, 0.0))
 
 
 @dataclass
