@@ -129,12 +129,20 @@ class PipaPillowRenderer(BaseVisitor):
 
         # 5. 绘制时值修饰符
         if unit_node.time_modifier and hasattr(unit_node, 'time_mod_pos'):
-            self._draw_text(
-                unit_node.time_modifier, 
-                unit_node.time_mod_pos, 
-                self.config.small_char_size, 
-                'rhythm'
-            )
+            if unit_node.time_modifier == "/h":
+                self._draw_text(
+                    "火", 
+                    unit_node.time_mod_pos, 
+                    self.config.small_char_size, 
+                    'rhythm'
+                )
+            elif unit_node.time_modifier == "/y":
+                self._draw_text(
+                    "引", 
+                    unit_node.time_mod_pos, 
+                    self.config.small_char_size, 
+                    'rhythm'
+                )
 
     def _draw_comment_textunit(self, node: TextNode, doc_node: ScoreDocumentNode):
         """

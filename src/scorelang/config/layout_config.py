@@ -6,8 +6,8 @@ class PipaLayoutConfig:
     # --- 字体配置参数 ---
     
     # 字体大小
-    main_char_size: float = 18.0
-    title_size: float = 18.0
+    main_char_size: float = 40
+    title_size: float = 60
     
     # 字体度量：字体实际要占用的空间的乘数
     width_per_pt: float = 1.5 
@@ -63,7 +63,7 @@ class PipaLayoutConfig:
         
         # 4. 计算 ScoreUnit X 偏移量
         self.scoreunit_x_offset = self.main_char_size * self.scoreunit_width_per_pt
-        
+
     def get_font_path(self, font_type: str) -> str:
         """
         **关键：返回你系统中中文字体文件的绝对路径。**

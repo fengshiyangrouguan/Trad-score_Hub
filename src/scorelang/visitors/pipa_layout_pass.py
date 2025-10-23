@@ -138,12 +138,14 @@ class PipaLayoutPass(BaseVisitor):
         """处理谱字单元，计算其绝对位置和内部组件的相对位置。"""
         # --- 1. 检查是否需要换列 (Column Break) ---
         if self.scoreunit_counter >= self.layout_config.UNIT_NUM:
+            print(f"{self.scoreunit_counter}计数，换行")
+            self.scoreunit_counter = 0
             self._do_column_break()
 
         # --- 2. 计算绝对定位和尺寸 ---
         
         # X 坐标：继承自当前 X (self.current_x)
-        self.current_x -= self.layout_config.scoreunit_x_offset # 向左平移
+        unit_x = self.current_x - self.layout_config.scoreunit_x_offset # 向左平移
         # Y 坐标：继承自当前 Y (self.current_y)
 
         # 尺寸：基于时值或固定单元宽度计算，并更新 self.last_element_height
@@ -151,17 +153,17 @@ class PipaLayoutPass(BaseVisitor):
         unit_height = self.scoreunit_height
         
         # 设置主谱字位置
-        node.main_char_pos = (self.current_x, self.current_y)
+        node.main_char_pos = (unit_x, self.current_y)
         
         # 缓存当前只拍子起始位置，用于当时值为整数时执行缩进
         if self.time_counter == 0:
             self.unit_temp_y = self.current_y
 
         # 计算小谱字+引/火的位置
-        small_mod_y = self._layout_small_modifiers(node)
+        small_mod_y = self._layout_small_modifiers(node,unit_x)
 
         # 计算右边符号位置
-        self._layout_right_rhythm_modifier(node)
+        self._layout_right_rhythm_modifier(node, unit_x)
 
         
         # --- 3. 更新 X/Y 流控 ---
@@ -173,16 +175,19 @@ class PipaLayoutPass(BaseVisitor):
             self.current_y = self.unit_temp_y + (unit_height * 0.4)
         elif self.time_counter == 2:            
             self.current_y = self.unit_temp_y + (unit_height * 0.8)
+
+            # 更新计数器
+            self.time_counter = 0
+            self.scoreunit_counter += 1  
         else:
             self.current_y = small_mod_y
 
         # 处理底部符号位置
-        self._layout_bottom_rhythm_modifier(node, unit_width, unit_height)
+        self._layout_bottom_rhythm_modifier(node, unit_x, unit_width, unit_height)
 
         #TODO 如果想让只拍子或其他底部符号可以出现在一个只拍子内部，让layout_bottom_rhythm_modifier移到第二步中，返回一个偏移值（0.2unitheight），第三步里，如果存在则加上，不存在则返回0，
 
-        # 更新计数器
-        self.scoreunit_counter += 1  
+
 
         return
 
@@ -198,11 +203,11 @@ class PipaLayoutPass(BaseVisitor):
     
  
 
-    def _layout_small_modifiers(self, node: ScoreUnitNode):
+    def _layout_small_modifiers(self, node: ScoreUnitNode,unit_x):
         """计算小字组的相对位置，并注入 AST"""
         
-        # 假设所有小字都紧靠在主音符的左侧
-        small_mod_x = self.current_x 
+        # 所有小字都紧靠在主音符的右下侧，向下排版，时值符号紧跟小字继续向下排版
+        small_mod_x = unit_x
         
         # 初始化 Y 轴起始点：
         small_mod_y = self.current_y + self.layout_config.main_char_space[1]
@@ -213,25 +218,24 @@ class PipaLayoutPass(BaseVisitor):
                 node.small_mod_pos.append((small_mod_x, small_mod_y))
                 small_mod_y += self.layout_config.small_char_space[1]
         if node.time_modifier is not None:
-            for _ in node.time_modifier:
-                node.time_mod_pos = (small_mod_x,small_mod_y)
-                small_mod_y += self.layout_config.small_char_space[1]
+            node.time_mod_pos = (small_mod_x,small_mod_y)
+            small_mod_y += self.layout_config.small_char_space[1]
             
         return small_mod_y
 
-    def _layout_bottom_rhythm_modifier(self, node: ScoreUnitNode, unit_width, unit_height):
+    def _layout_bottom_rhythm_modifier(self, node: ScoreUnitNode, unit_x, unit_width, unit_height):
         """计算底部符号的相对位置，并注入 AST"""
         if node.bottom_rhythm_modifier == None:
             return
-        bottom_mod_x = self.current_x - (unit_width / 2)
+        bottom_mod_x = unit_x - (unit_width / 2)
         bottom_mod_y = self.current_y + (unit_height * 0.1)
         node.bottom_rhythm_mod_pos = (bottom_mod_x, bottom_mod_y)
         self.current_y = self.unit_temp_y + unit_height
         return
  
-    def _layout_right_rhythm_modifier(self,node: ScoreUnitNode):
+    def _layout_right_rhythm_modifier(self,node: ScoreUnitNode,unit_x):
         """计算右边符号的相对位置，并注入 AST"""
-        right_mod_x = self.current_x + (0.5 * self.layout_config.scoreunit_x_offset)
+        right_mod_x = unit_x + (0.5 * self.layout_config.scoreunit_x_offset)
         right_mod_y = self.current_y + (0.5 * self.layout_config.main_char_size)
 
         node.right_rhythm_mod_pos = (right_mod_x,right_mod_y)
