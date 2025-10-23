@@ -1,6 +1,7 @@
 # app/services.py
 
 from typing import Any, Dict, Optional
+from pathlib import Path
 from src.scorelang.parser_factory import ParserFactory
 from src.scorelang.visitor_manager import VisitorManager
 from src.scorelang.ast_score.nodes import ScoreDocumentNode
@@ -44,32 +45,36 @@ class ScoreService:
         # 返回语义完整的 AST 根节点
         return ast_root
 
-    # def render_score(self, ast_root: ScoreDocumentNode, score_type: str, format: str) -> Any:
-    #     """
-    #     渲染方法：查找正确的 Renderer，生成最终格式的输出。
-    #     """
-    #     score_type = score_type.lower()
-    #     format = format.lower()
+    def render_score(self, ast_root: ScoreDocumentNode, score_type: str, format: str) -> Any:
+        """
+        渲染方法：查找正确的 Renderer，生成最终格式的输出。
+        """
+        score_type = score_type.lower()
+        format = format.lower()
         
-    #     renderer_path = self.pipeline_config.get(score_type, {}).get('renderers', {}).get(format)
+        # renderer_path = self.pipeline_config.get(score_type, {}).get('renderers', {}).get(format)
 
-    #     if not renderer_path:
-    #         raise ValueError(f"Unsupported rendering format '{format}' for score type '{score_type}'.")
+        # if not renderer_path:
+        #     raise ValueError(f"Unsupported rendering format '{format}' for score type '{score_type}'.")
 
-    #     # --- 动态加载和运行 Renderer ---
-    #     try:
-    #         # 实际项目中，这里会使用反射 (importlib)
-    #         # 占位：假设我们只关心 TextRenderer
-    #         if format == 'text':
-    #             from src.scorelang.renderers.pipa_text_renderer import PipaTextRenderer
-    #             RendererClass = PipaTextRenderer
-    #         else:
-    #              # 模拟动态加载失败
-    #              raise NotImplementedError(f"Renderer for {renderer_path} not implemented.")
+        # --- 动态加载和运行 Renderer ---
+        try:
+            # 实际项目中，这里会使用反射 (importlib)
+            # 占位：假设我们只关心 TextRenderer
+            if format == 'pillow':
+                from src.scorelang.renderers.pipa_pillow_renderer import PipaPillowRenderer
+                RendererClass = PipaPillowRenderer
+            else:
+                 # 模拟动态加载失败
+                # raise NotImplementedError(f"Renderer for {renderer_path} not implemented.")
+                raise NotImplementedError(f"Renderer not implemented.")
             
-    #         renderer = RendererClass()
-    #         final_output = renderer.visit(ast_root)
-    #         return final_output
+            renderer = RendererClass()
+            current_dir = Path(__file__).parent.parent / "new_system_test.png"
+            dir = str(current_dir)
+            renderer.render(ast_root,dir)
+            return
             
-    #     except (ImportError, AttributeError, NotImplementedError) as e:
-    #         raise RuntimeError(f"Failed to load or run renderer '{renderer_path}': {e}")
+        except (ImportError, AttributeError, NotImplementedError) as e:
+            #raise RuntimeError(f"Failed to load or run renderer '{renderer_path}': {e}")
+            raise RuntimeError(f"Failed to load or run renderer: {e}")

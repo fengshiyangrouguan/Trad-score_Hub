@@ -63,3 +63,13 @@ class PipaLayoutConfig:
         
         # 4. 计算 ScoreUnit X 偏移量
         self.scoreunit_x_offset = self.main_char_size * self.scoreunit_width_per_pt
+        
+    def get_font_path(self, font_type: str) -> str:
+        """
+        **关键：返回你系统中中文字体文件的绝对路径。**
+        你需要根据你的开发环境来设置这个路径！
+        """
+        # ⚠️ 必须替换为你的实际字体路径！
+        if font_type == 'title':
+             return r"C:\Windows\Fonts\FZYanZQKSJF.TTF"  # 假设标题字体
+        return r"C:\Windows\Fonts\FZYanZQKSJF.TTF" # 假设主要内容字体

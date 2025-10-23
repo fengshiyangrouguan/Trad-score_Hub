@@ -58,17 +58,21 @@ def main():
     # 解析成 AST
     score_document: ScoreDocumentNode = service.process_score(sample_score_text,"pipa")
 
-    # 3️⃣ 输出到控制台
+    # 3.输出到控制台
     print("=== AST ===")
     print(score_document)
 
-    # 4️⃣ 保存为 JSON
+    # 4.保存为 JSON
     json_data = json.dumps(score_document.to_dict(), ensure_ascii=False, indent=2)
 
     with open("score_document.json", "w", encoding="utf-8") as f:
         f.write(json_data)
 
     print("=== 已保存 score_document.json ===")
+
+    # 5.渲染为图片
+    service.render_score(score_document,"pipa","pillow")
+
 
 if __name__ == "__main__":
     main()

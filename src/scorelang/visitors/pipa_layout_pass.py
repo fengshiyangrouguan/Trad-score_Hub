@@ -55,7 +55,7 @@ class PipaLayoutPass(BaseVisitor):
 
         #计算每列可容纳最大内容文本字数
         self.text_column = effective_y_height - (2 * self.layout_config.main_char_space[1])
-        self.max_text_per_column = math.floor(self.text_column / self.layout_config.small_char_space[1])
+        self.max_text_per_column = math.floor(self.text_column / self.layout_config.textunit_space[1])
         print("PipaLayoutPass initialized.")
 
 
@@ -192,7 +192,7 @@ class PipaLayoutPass(BaseVisitor):
         node.position = (self.current_x, text_indentation)
         total_texts = len(node.text)
         total_columns = math.ceil(total_texts / self.max_text_per_column)
-        node.width_dimension = total_columns * self.layout_config.small_char_space[0]
+        node.width_dimension = total_columns * self.layout_config.textunit_space[0]
         self.current_x -= node.width_dimension
         return
     
