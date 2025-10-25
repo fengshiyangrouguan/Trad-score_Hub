@@ -34,7 +34,23 @@ class PipaTheoryAnalysisPass(BaseVisitor):
         从根节点开始遍历所有 Section。
         """
         # 依赖 generic_visit 自动遍历到 Sections
-        print("开始遍历根节点")
+        print("开始遍历根节点并处理模式继承")
+
+        # 1. 强制设置 Document 的默认模式
+        if not node.mode:
+            node.mode = '黄钟调' 
+            
+        current_inherited_mode = node.mode
+        # 2. 遍历所有直接元素，为未指定 mode 的 SectionNode 继承模式
+        for element in node.elements:
+            if isinstance(element, SectionNode):
+                if not element.mode: 
+                    # 设置为上一次设置的调式类型
+                    element.mode = current_inherited_mode
+                # 更新调式定义
+                current_inherited_mode = element.mode
+                
+        # 3. 继续遍历子节点以进行后续的语义分析
         self.generic_visit(node)
         
     def visit_SectionNode(self, node: SectionNode):

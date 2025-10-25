@@ -73,9 +73,6 @@ class PipaParser(BaseParser):
             elif token["type"] not in ["SKIP_SPACE"]:
                 # 忽略空格，对所有未处理的语义或Token发出警告
                 print(f"Warning: Token type '{token['type']}' (semantic: {semantic}) was skipped.")
-
-        # 确保文档模式和所有 Section 模式都被赋值
-        self._resolve_modes() 
         
         return self.score_document
 
@@ -89,20 +86,6 @@ class PipaParser(BaseParser):
         """返回当前应该添加元素的容器（Section 或 Document 根）"""
         # 注意：这里需要确保返回的是可附加elements的容器
         return self.current_section or self.score_document
-
-    def _resolve_modes(self):
-        """确保文档和所有 Section 都有确定的 mode"""
-        # 强制设置 Document 的默认模式，符合我们之前的讨论
-        if not self.score_document.mode:
-            self.score_document.mode = '黄钟调' # 默认值
-            
-        doc_mode = self.score_document.mode
-        
-        for element in self.score_document.elements:
-            if isinstance(element, SectionNode):
-                # 如果 Section 模式未指定，则继承 Document 模式
-                if not element.mode: 
-                    element.mode = doc_mode
 
     # --- 语义处理方法 ---
 
@@ -129,12 +112,8 @@ class PipaParser(BaseParser):
     def _handle_section(self, token):
         """处理 SECTION (##) 启动新的乐段"""
         val = token["value"]
-        
-        # 模式继承逻辑：继承上一个 Section 的模式，或 Document 的模式
-        #以后请迁移到visitor里面
-        inherited_mode = self.current_section.mode if self.current_section else self.score_document.mode
-        
-        self.current_section = SectionNode(title=val, mode=inherited_mode)
+             
+        self.current_section = SectionNode(title=val, mode=None)
         self.score_document.elements.append(self.current_section)
 
 
@@ -143,6 +122,19 @@ class PipaParser(BaseParser):
         ttype = token["type"]
         
         if ttype == "UNIT_START":
+            # 检查：在创建unit前当前没有活动的 SectionNode (即 current_section 为 None)
+            if self.current_section is None:
+
+                # 创建虚拟 SectionNode
+                virtual_section = SectionNode(
+                    title = None,  # 文本设置为 "None"
+                    mode = None, # 继承根节点的 mode
+                    mode_display_flag = False   # 设置 display_flag 为 False
+                )
+                # 将虚拟 Section 添加到 Document
+                self.score_document.elements.append(virtual_section)
+                # 将其设置为当前的 Section
+                self.current_section = virtual_section
             # 必须创建 PipaScoreUnitNode 实例
             self.current_unit = ScoreUnitNode(main_score_character=None) 
             self._get_current_container().elements.append(self.current_unit)

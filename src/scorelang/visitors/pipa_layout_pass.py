@@ -22,10 +22,10 @@ class PipaLayoutPass(BaseVisitor):
             self, 
             page_dimensions = (2160, 1280), 
             margin: Dict[str, float] = {
-                "top": 20, 
-                "left": 20, 
-                "right": 20, 
-                "bottom": 20
+                "top": 60, 
+                "left": 60, 
+                "right": 60, 
+                "bottom": 60
             }
         ):
         super().__init__()
@@ -56,6 +56,9 @@ class PipaLayoutPass(BaseVisitor):
         #计算每列可容纳最大内容文本字数
         self.text_column = effective_y_height - (2 * self.layout_config.main_char_space[1])
         self.max_text_per_column = math.floor(self.text_column / self.layout_config.textunit_space[1])
+
+        #上一个字是否是乐谱的标志位
+        self._is_score_unit = False
         print("PipaLayoutPass initialized.")
 
 
@@ -68,6 +71,8 @@ class PipaLayoutPass(BaseVisitor):
         print("Visiting ScoreDocumentNode: Calculating Header Layout.")
         
         # 1. 初始化 X/Y 流控起始点
+        node.page_dimensions = self.page_dimensions
+        node.margin = self.margin
         self.current_x: float = self.page_dimensions[0] - self.margin['right']
         self.current_y = self.margin['top']
         header_width_acc = 0.0 # 页首总宽度累加器
@@ -86,8 +91,8 @@ class PipaLayoutPass(BaseVisitor):
         # --- 3. 处理 Mode 元数据 ---
         if node.mode:
             mode_w = self.layout_config.mode_space[0]
-            mode_unit_h = self.layout_config.mode_space[1]
-            mode_indentation = self.current_y + mode_unit_h # 一格缩进
+            title_unit_h = self.layout_config.title_space[1]
+            mode_indentation = self.current_y + title_unit_h # 一格缩进
             # X 坐标：当前列的起始点 (是上一个元素计算后的新 current_x)
             node.mode_pos = (self.current_x, mode_indentation)
 
@@ -101,6 +106,23 @@ class PipaLayoutPass(BaseVisitor):
         # 5. 更新 Y 流控：乐谱主体仍然从顶部的 Y 坐标开始
         # 但 X 坐标需要跳过页首区域，从新的 self.current_x 开始
         # 这里不需要更新 self.current_y，因为页首信息和乐谱主体在 X 轴上是平行的。
+
+        current_display_mode = node.mode
+        # 2. 遍历 SectionNode 以确定 mode_display_flag
+        for element in node.elements:
+            if isinstance(element, SectionNode):
+                # 检查 Section 是否拥有一个不同的 mode (或 SectionNode.mode 为 None，但前一个 Pass 应已解决)
+                if element.mode and element.mode != current_display_mode:
+                    # 模式发生变化，需要显示新的模式标记
+                    element.mode_display_flag = True
+                    # 更新当前显示的模式
+                    current_display_mode = element.mode
+                elif element.mode and element.mode == current_display_mode:
+                    # 模式与上一个显示的模式相同，不显示
+                    element.mode_display_flag = False
+                else:
+                    # Fallback/安全处理：如果 mode 丢失或异常，通常也不显示
+                    element.mode_display_flag = False
         
         self.generic_visit(node)
         
@@ -108,6 +130,13 @@ class PipaLayoutPass(BaseVisitor):
         """处理乐部节点，设置起始 X/Y 坐标，并开始列排版。"""
         print(f"Visiting SectionNode: {node.title}")
 
+        self.current_y = self.margin['top']
+
+        if self._is_score_unit == True:
+            self.current_x -= (self.layout_config.main_char_space[0] + self.layout_config.scoreunit_x_offset)
+            self.scoreunit_counter = 0
+            self.time_counter = 0
+            self._is_score_unit = False
         header_width_acc = 0.0 # 页首总宽度累加器
         
         if node.title:
@@ -123,7 +152,7 @@ class PipaLayoutPass(BaseVisitor):
         if node.mode_display_flag:
             mode_w = self.layout_config.mode_space[0]
             mode_unit_h = self.layout_config.mode_space[1]
-            mode_indentation = self.current_y + mode_unit_h # 一格缩进
+            mode_indentation = self.current_y + title_unit_h # 一格缩进
             # X 坐标：当前列的起始点 (是上一个元素计算后的新 current_x)
             node.mode_pos = (self.current_x, mode_indentation)
             header_width_acc += mode_w
@@ -137,8 +166,9 @@ class PipaLayoutPass(BaseVisitor):
     def visit_ScoreUnitNode(self, node: ScoreUnitNode):
         """处理谱字单元，计算其绝对位置和内部组件的相对位置。"""
         # --- 1. 检查是否需要换列 (Column Break) ---
+        if self._is_score_unit == False:
+            self._is_score_unit = True
         if self.scoreunit_counter >= self.layout_config.UNIT_NUM:
-            print(f"{self.scoreunit_counter}计数，换行")
             self.scoreunit_counter = 0
             self._do_column_break()
 
@@ -174,8 +204,9 @@ class PipaLayoutPass(BaseVisitor):
         if self.time_counter == 1:            
             self.current_y = self.unit_temp_y + (unit_height * 0.4)
         elif self.time_counter == 2:            
-            self.current_y = self.unit_temp_y + (unit_height * 0.8)
-
+            self.current_y = self.unit_temp_y + (unit_height * 0.8) + (unit_height * 0.1)
+            self._layout_bottom_rhythm_modifier(node, unit_x)
+            self.current_y = self.unit_temp_y + unit_height
             # 更新计数器
             self.time_counter = 0
             self.scoreunit_counter += 1  
@@ -183,22 +214,20 @@ class PipaLayoutPass(BaseVisitor):
             self.current_y = small_mod_y
 
         # 处理底部符号位置
-        self._layout_bottom_rhythm_modifier(node, unit_x, unit_width, unit_height)
-
-        #TODO 如果想让只拍子或其他底部符号可以出现在一个只拍子内部，让layout_bottom_rhythm_modifier移到第二步中，返回一个偏移值（0.2unitheight），第三步里，如果存在则加上，不存在则返回0，
 
 
-
+        #TODO 如果想让只拍子或其他底部符号可以出现在一个只拍子内部，让layout_bottom_rhythm_modifier移到第二步中，返回一个偏移值（0.2unitheight），第三步里，如果存在则加上，不存在则返回0
         return
 
     def visit_TextNode(self,node: TextNode):
         """处理文本单元，计算其绝对位置"""
-        text_indentation = self.current_y + (2 * self.layout_config.main_char_space[1]) # 硬编码两格缩进
+        title_unit_h = self.layout_config.title_space[1]
+        text_indentation = self.current_y + (2 * title_unit_h) # 硬编码两格缩进
         node.position = (self.current_x, text_indentation)
         total_texts = len(node.text)
         total_columns = math.ceil(total_texts / self.max_text_per_column)
-        node.width_dimension = total_columns * self.layout_config.textunit_space[0]
-        self.current_x -= node.width_dimension
+        node.dimensions = (total_columns * self.layout_config.textunit_space[0], self.text_column)
+        self.current_x -= node.dimensions[0]
         return
     
  
@@ -223,26 +252,25 @@ class PipaLayoutPass(BaseVisitor):
             
         return small_mod_y
 
-    def _layout_bottom_rhythm_modifier(self, node: ScoreUnitNode, unit_x, unit_width, unit_height):
+    def _layout_bottom_rhythm_modifier(self, node: ScoreUnitNode, unit_x):
         """计算底部符号的相对位置，并注入 AST"""
         if node.bottom_rhythm_modifier == None:
             return
-        bottom_mod_x = unit_x - (unit_width / 2)
-        bottom_mod_y = self.current_y + (unit_height * 0.1)
+        bottom_mod_x = unit_x - (self.layout_config.main_char_size / 2)
+        bottom_mod_y = self.current_y
         node.bottom_rhythm_mod_pos = (bottom_mod_x, bottom_mod_y)
-        self.current_y = self.unit_temp_y + unit_height
         return
  
     def _layout_right_rhythm_modifier(self,node: ScoreUnitNode,unit_x):
         """计算右边符号的相对位置，并注入 AST"""
-        right_mod_x = unit_x + (0.5 * self.layout_config.scoreunit_x_offset)
+        right_mod_x = unit_x + (0.5 * self.layout_config.small_char_space[0])
         right_mod_y = self.current_y + (0.5 * self.layout_config.main_char_size)
 
         node.right_rhythm_mod_pos = (right_mod_x,right_mod_y)
         return
     
     def _do_column_break(self):
-        self.current_x -= self.layout_config.main_char_space[0]
+        self.current_x -= (self.layout_config.main_char_space[0] + self.layout_config.scoreunit_x_offset)
 
         # 从页顶部开始
         self.current_y = self.margin['top']

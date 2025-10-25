@@ -6,8 +6,7 @@ from src.scorelang.parser_factory import ParserFactory
 from src.scorelang.visitor_manager import VisitorManager
 from src.scorelang.ast_score.nodes import ScoreDocumentNode
 
-
-
+ROOT_PATH = str(Path(__file__).parent.parent.parent.parent / "new_system_test.png")
 
 class ScoreService:
     """
@@ -45,7 +44,7 @@ class ScoreService:
         # 返回语义完整的 AST 根节点
         return ast_root
 
-    def render_score(self, ast_root: ScoreDocumentNode, score_type: str, format: str) -> Any:
+    def render_score(self, ast_root: ScoreDocumentNode, score_type: str, format: str, save_dir: str = ROOT_PATH) -> Any:
         """
         渲染方法：查找正确的 Renderer，生成最终格式的输出。
         """
@@ -70,9 +69,7 @@ class ScoreService:
                 raise NotImplementedError(f"Renderer not implemented.")
             
             renderer = RendererClass()
-            current_dir = Path(__file__).parent.parent / "new_system_test.png"
-            dir = str(current_dir)
-            renderer.render(ast_root,dir)
+            renderer.render(ast_root,save_dir)
             return
             
         except (ImportError, AttributeError, NotImplementedError) as e:

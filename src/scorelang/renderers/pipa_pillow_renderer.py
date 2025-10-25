@@ -1,6 +1,6 @@
 import math
 from PIL import Image, ImageDraw, ImageFont
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional, Tuple, Union, Callable
 # 确保导入了正确的 AST 节点和 BaseVisitor
 from ..visitors.base_visitor import BaseVisitor
 from ..ast_score.nodes import ScoreDocumentNode, SectionNode, ScoreUnitNode, TextNode
@@ -28,6 +28,7 @@ class PipaPillowRenderer(BaseVisitor):
         self.document_node: Optional[ScoreDocumentNode] = None
         self.output_path: Optional[str] = None
         
+        # 处理映射表
         print("Pipa Pillow Renderer initialized.")
 
     # -----------------------------------------------------------
@@ -43,7 +44,7 @@ class PipaPillowRenderer(BaseVisitor):
             self._font_cache[key] = ImageFont.truetype(font_path, int(size))
         return self._font_cache[key]
 
-    def _draw_text(self, text: str, pos: List[float], size: float, font_type: str = 'text'):
+    def _draw_text(self, text: str, pos: List[float], size: float, font_type: str = 'text', color: str = "black"):
         """
         绘制文本。
         """
@@ -55,11 +56,129 @@ class PipaPillowRenderer(BaseVisitor):
         self.draw.text(
             (x, y), 
             text, 
-            fill='black', 
+            fill= color, 
             font=font, 
             # 使用 'ra' (Right-Top/Ascender) 锚点
             anchor="ra" 
         )
+
+
+    def _draw_vertical_text(
+        self, 
+        text: str, 
+        start_pos: Tuple[float, float], 
+        size: float, 
+        font_type: str
+    ) -> float:
+        """
+        将字符串中的每个字符从上到下逐个绘制。
+        
+        参数:
+        - text: 要绘制的字符串。
+        - start_pos: 第一个字符的 (X, Y) 起始坐标。
+        - size: 字体大小。
+        - font_type: 字体类型（用于获取空间度量）。
+        
+        返回:
+        - 最后一个字符的 Y 轴结束位置（下一个元素应开始的位置）。
+        """
+        
+        start_x, current_y = start_pos
+        
+        # 1. 根据 font_type 获取对应的 Y 轴空间占用
+        if font_type == 'title':
+            # 假设 title_space 是 (X_占用, Y_占用)
+            _, char_y_space = self.config.title_space
+        elif font_type == 'mode':
+            _, char_y_space = self.config.mode_space
+        else:
+            # 对于其他类型，可能需要更通用的逻辑
+            return
+            
+        
+        # 2. 逐字符绘制
+        for char in text:
+            # 绘制当前字符
+            self._draw_text(
+                char, 
+                (start_x, current_y), 
+                size, 
+                font_type
+            )
+            
+            # 更新 Y 轴：向下移动一个字符的 Y 空间
+            current_y += char_y_space
+            
+        # 3. 返回最终 Y 坐标，供下一个元素继续向下排版
+        return current_y
+    
+    def _draw_hollow_circle(
+        self,
+        center_pos: Tuple[float, float], 
+        radius: float, 
+        color: Union[str, Tuple[int, int, int]] = 'black', 
+        line_width: int = 1
+    ):
+        """
+        使用 Pillow 的 ImageDraw 对象绘制一个空心圆圈。
+        
+        参数:
+        - draw: ImageDraw.Draw 实例，用于在图像上绘图。
+        - center_pos: 圆心的 (x, y) 坐标元组。
+        - radius: 圆的半径（以像素为单位）。
+        - color: 圆圈的轮廓颜色，可以是字符串（如 'black'）或 RGB 元组。
+        - line_width: 圆圈边框的宽度（以像素为单位）。
+        """
+        if not self.draw: return
+        center_x, center_y = center_pos
+        
+        # 计算圆的边界框 (Bounding Box): [x1, y1, x2, y2]
+        # Pillow 的 ellipse 方法需要的是边界矩形的左上角和右下角坐标。
+        x1 = center_x - radius
+        y1 = center_y - radius
+        x2 = center_x + radius
+        y2 = center_y + radius
+        
+        bbox = (x1, y1, x2, y2)
+        
+        # 使用 draw.ellipse() 绘制无填充的椭圆（当边界框是正方形时即为圆）
+        self.draw.ellipse(
+            bbox, 
+            outline=color, 
+            width=line_width
+            # 注意：不设置 fill 参数，或设置为 None，即为空心
+        )
+    def _draw_line(
+        self, 
+        start_pos: Tuple[float, float], 
+        end_pos: Tuple[float, float], 
+        line_width: int = 1,
+        color: Union[str, Tuple[int, int, int]] = 'black'
+        ):
+        """
+        使用 Pillow 的 ImageDraw 对象绘制一条线段。
+        
+        参数:
+        - draw: ImageDraw.Draw 实例，用于在图像上绘图。
+        - start_pos: 线段的起点 (x1, y1) 坐标元组。
+        - end_pos: 线段的终点 (x2, y2) 坐标元组。
+        - color: 线段的颜色，可以是字符串（如 'black'）或 RGB 元组。
+        - line_width: 线段的宽度（以像素为单位）。
+        """
+        
+        x1, y1 = start_pos
+        x2, y2 = end_pos
+        
+        # Pillow 的 line 方法接受一个坐标序列，这里传入 (x1, y1, x2, y2)
+        coordinates = [(x1, y1), (x2, y2)]
+        
+        # 使用 draw.line() 绘制线段
+        self.draw.line(
+            coordinates, 
+            fill=color,       # 对于 line 方法，使用 fill 参数设置颜色
+            width=line_width
+        )
+    
 
     # -----------------------------------------------------------
     # 绘图方法 (接收 AST 节点对象)
@@ -70,7 +189,7 @@ class PipaPillowRenderer(BaseVisitor):
         
         # 1. 绘制 Title
         if node.title and hasattr(node, 'title_pos'):
-            self._draw_text(
+            self._draw_vertical_text(
                 node.title, 
                 node.title_pos, 
                 self.config.title_size,
@@ -79,11 +198,11 @@ class PipaPillowRenderer(BaseVisitor):
         
         # 2. 绘制 Mode
         if node.mode and hasattr(node, 'mode_pos'):
-            self._draw_text(
+            self._draw_vertical_text(
                 node.mode, 
                 node.mode_pos, 
-                self.config.small_char_size, 
-                'small'
+                self.config.mode_size, 
+                'mode'
             )
             
     def _draw_score_unit(self, unit_node: ScoreUnitNode):
@@ -95,7 +214,7 @@ class PipaPillowRenderer(BaseVisitor):
                  unit_node.main_score_character, 
                  unit_node.main_char_pos, 
                  self.config.main_char_size, 
-                 'main'
+                 'score'
             )
         
         # 2. 绘制小修饰符 (使用节点中的属性)
@@ -106,27 +225,55 @@ class PipaPillowRenderer(BaseVisitor):
                         mod_char, 
                         unit_node.small_mod_pos[i], 
                         self.config.small_char_size, 
-                        'small'
+                        'score'
                     )
 
         # 3. 绘制右侧节奏修饰符 (检查属性是否存在)
         if unit_node.right_rhythm_modifier and hasattr(unit_node, 'right_rhythm_mod_pos'):
-            self._draw_text(
-                unit_node.right_rhythm_modifier, 
-                unit_node.right_rhythm_mod_pos, 
-                self.config.small_char_size, 
-                'rhythm'
-            )
+            if unit_node.right_rhythm_modifier == "/py":
+                radius = self.config.small_char_size / 5
+                width: int = int(radius*2)
+                self._draw_hollow_circle(
+                    unit_node.right_rhythm_mod_pos, 
+                    radius, 
+                    color='red', 
+                    line_width = width
+                )
+            elif unit_node.right_rhythm_modifier == "/b":
+                pos = (unit_node.right_rhythm_mod_pos[0] + self.config.small_char_size/2,
+                       unit_node.right_rhythm_mod_pos[1] - self.config.small_char_size/2,)
+                self._draw_text(
+                    "百", 
+                    pos, 
+                    self.config.small_char_size, 
+                    'score',
+                    "red"
+                )
 
         # 4. 绘制底部节奏修饰符
         if unit_node.bottom_rhythm_modifier and hasattr(unit_node, 'bottom_rhythm_mod_pos'):
-            self._draw_text(
-                unit_node.bottom_rhythm_modifier, 
-                unit_node.bottom_rhythm_mod_pos, 
-                self.config.small_char_size, 
-                'rhythm'
-            )
+            if unit_node.bottom_rhythm_modifier == "/pz":
+                radius = self.config.small_char_size / 5
+                width: int = int(radius / 2)
+                          
+                # 3. 调用函数绘制空心圆
+                self._draw_hollow_circle(
+                    unit_node.bottom_rhythm_mod_pos, 
+                    radius, 
+                    color='red', 
+                    line_width = width
+                )
+            elif unit_node.bottom_rhythm_modifier == "/r":
+                pos = (unit_node.bottom_rhythm_mod_pos[0]+self.config.small_char_size,unit_node.bottom_rhythm_mod_pos[1]-self.config.small_char_space[1]/2)
+                self._draw_text(
+                    "一",
+                    pos,
+                    self.config.small_char_size,
+                    "score",
+                    "red"
+                )
 
+                    
         # 5. 绘制时值修饰符
         if unit_node.time_modifier and hasattr(unit_node, 'time_mod_pos'):
             if unit_node.time_modifier == "/h":
@@ -134,14 +281,16 @@ class PipaPillowRenderer(BaseVisitor):
                     "火", 
                     unit_node.time_mod_pos, 
                     self.config.small_char_size, 
-                    'rhythm'
+                    'score',
+                    "red"
                 )
             elif unit_node.time_modifier == "/y":
                 self._draw_text(
                     "引", 
                     unit_node.time_mod_pos, 
                     self.config.small_char_size, 
-                    'rhythm'
+                    'score',
+                    "red"
                 )
 
     def _draw_comment_textunit(self, node: TextNode, doc_node: ScoreDocumentNode):
@@ -163,12 +312,10 @@ class PipaPillowRenderer(BaseVisitor):
         
         # 获取页边距 (从 ScoreDocumentNode 属性获取)
         margin = doc_node.margin # 假设 margin 是一个字典属性
-        bottom_margin = margin.get('bottom', 0)
         left_margin = margin.get('left', 0)
         
         # 1. 计算纵向可用空间
-        available_height = self.page_height - bottom_margin - start_y
-        
+        available_height = node.dimensions[1]
         if available_height <= 0:
             print(f"Warning: Not enough vertical space for comment at Y={start_y}")
             return
@@ -254,7 +401,23 @@ class PipaPillowRenderer(BaseVisitor):
         """
         # TODO: 绘制 Section 标题 (使用 node.title 和 node.position_x/y 属性)
         # 例如: self._draw_text(node.title, [node.position_x, node.position_y], ...)
+                # 1. 绘制 Title
+        if node.title and hasattr(node, 'title_pos'):
+            self._draw_vertical_text(
+                node.title, 
+                node.title_pos, 
+                self.config.title_size,
+                'title'
+            )
         
+        # 2. 绘制 Mode
+        if node.mode and node.mode_display_flag and hasattr(node, 'mode_pos'):
+            self._draw_vertical_text(
+                node.mode, 
+                node.mode_pos, 
+                self.config.mode_size, 
+                'mode'
+            )
         # 继续遍历 Section 内部的 ScoreUnitNode/TextNode
         self.generic_visit(node)
         
@@ -264,7 +427,7 @@ class PipaPillowRenderer(BaseVisitor):
         """
         self._draw_score_unit(node)
         
-        # ScoreUnit 通常是叶子节点，不需要继续 generic_visit
+        # ScoreUnit 是叶子节点，不需要继续 generic_visit
         return 
         
     def visit_TextNode(self, node: TextNode):
@@ -274,5 +437,5 @@ class PipaPillowRenderer(BaseVisitor):
         if self.document_node:
             self._draw_comment_textunit(node, self.document_node)
         
-        # TextNode 通常是叶子节点，不需要继续 generic_visit
+        # TextNode 是叶子节点，不需要继续 generic_visit
         return

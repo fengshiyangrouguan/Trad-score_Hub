@@ -26,9 +26,8 @@ class TextNode(Node):
     type: str
     text: str
 
-    # 几何属性已改为 float
     position: Tuple[float, float] = field(default=(0.0, 0.0))
-    width_dimension: float = field(default=0.0)
+    dimensions: Tuple[float, float] = field(default=(0.0, 0.0))
 
 
 @dataclass
@@ -46,9 +45,8 @@ class ScoreUnitNode(Node):
     main_char_pos: Tuple[float, float] = field(default=(0.0, 0.0))
     small_mod_pos: List[Tuple[float, float]] = field(default_factory=list)
     time_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    right_rhythm_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))  # 注意！ 记录的是中心位置
+    right_rhythm_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))  # 注意！只有这个记录的是中心位置
     bottom_rhythm_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    #dimensions: Tuple[float, float] = field(default=(0.0, 0.0))
 
 
 @dataclass
@@ -57,7 +55,7 @@ class SectionNode(Node):
     乐部节点
     """
     title: Optional[str] = None
-    mode: Optional[str] = None      # 可临时转调，None 表示继承 Document 的调式
+    mode: Optional[str] = None      # 可临时转调
     elements: List[Union[ScoreUnitNode, TextNode]] = field(default_factory=list) # 可包含谱字，文本
 
     title_pos: Tuple[float, float] = field(default=(0.0, 0.0))
