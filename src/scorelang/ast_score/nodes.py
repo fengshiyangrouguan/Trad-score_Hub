@@ -26,8 +26,6 @@ class TextNode(Node):
     type: str
     text: str
 
-    position: Tuple[float, float] = field(default=(0.0, 0.0))
-    dimensions: Tuple[float, float] = field(default=(0.0, 0.0))
 
 
 @dataclass
@@ -37,16 +35,11 @@ class ScoreUnitNode(Node):
     """ 
     main_score_character: str                                   # 主音符（谱字，e.g., "一", "二", "丁"）
     small_modifier: List[str] = field(default_factory=list)     # 附加的小字号音符组（谱字）
-    time_modifier: Optional[str] = None                         # 时值符号（引，火）
+    time_modifier: List[str] = field(default_factory=list)      # 时值符号（引，火）
     right_rhythm_modifier: Optional[str] = None                 # 右侧的节奏修饰符（e.g., "百","乐拍子" ）
     bottom_rhythm_modifier: Optional[str] = None                # 正下方的节奏修饰符（e.g., "只拍子","-"）
     time: float = 1.0                                           # 时值 (1.0, 0.5, 2.0)
 
-    main_char_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    small_mod_pos: List[Tuple[float, float]] = field(default_factory=list)
-    time_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    right_rhythm_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))  # 注意！只有这个记录的是中心位置
-    bottom_rhythm_mod_pos: Tuple[float, float] = field(default=(0.0, 0.0))
 
 
 @dataclass
@@ -58,10 +51,6 @@ class SectionNode(Node):
     mode: Optional[str] = None      # 可临时转调
     elements: List[Union[ScoreUnitNode, TextNode]] = field(default_factory=list) # 可包含谱字，文本
 
-    title_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    mode_display_flag: bool = field(default=False) 
-    mode_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    width_dimension: float = field(default=0.0)
 
 
 @dataclass
@@ -76,14 +65,3 @@ class ScoreDocumentNode(Node):
     proofreader: Optional[str] = None
     date: Optional[str] = None
     elements: List[Union[SectionNode, TextNode]] = field(default_factory=list) # 可包含谱字，文本，乐部
-
-    page_dimensions: Tuple[float, float] = field(default=(2160.0, 1280.0))
-    title_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    mode_pos: Tuple[float, float] = field(default=(0.0, 0.0))
-    width_dimension: float = field(default=0.0)
-    margin: Dict[str, float] = field(default_factory=lambda: {
-        "top": 20.0, 
-        "left": 20.0, 
-        "right": 20.0, 
-        "bottom": 20.0
-    })

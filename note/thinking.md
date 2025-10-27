@@ -190,6 +190,93 @@ API / CLI 返回结果
    * JSON、PNG、文本谱等形式返回给调用者
 
 
-# 2025. 
+# 2025.10.25
 
+### pipa_layout_pass可以生成一个renderlist（类似css），一页生成一个list，而不是去修改node，形成耦合
+### 应该用一个style_map同时控制layout_config和renderer
+### layout_config 应更名为 layout_rules_generator
+### layoutpass生成command时就可以不传入font size，font color等等，以此做到更个性化的设计
 
+# 2025.10.26
+
+## 将**乐理的语义**与**最终的视觉符号**分离解耦合
+
+**（AST 存储标准化乐理标识）确保 AST 的纯粹性和可移植性。**
+
+### 最终确认的架构方案
+
+我们将采用以下三层分离的模式：
+
+| 架构层 | 存储内容 | 映射/职责 | 谁在使用？ |
+| :--- | :--- | :--- | :--- |
+| **Parser / AST** | **标准乐理标识** (例如：`Marker.ARPEGGIO`, `Rhythm.DOTTED`) | **Parser** 负责将输入符号 (`/py`) $\to$ 标准乐理标识 (`ARPEGGIO`)。 | Layout Pass |
+| **LayoutMetrics** | **乐理标识 $\to$ 渲染类型** (`ARPEGGIO` $\to$ `DOT_MARKER`) | **Layout Pass** 查询此映射，以知道要生成哪个 Render Command。 | Layout Pass |
+| **StyleManager** | **渲染类型 $\to$ 符号字符** (`DOT_MARKER` $\to$ `"乐"`) | **Renderer** 查询此映射，以知道要画哪个字符。 | Renderer |
+
+-----
+
+### 示例实现
+
+#### 1\. AST Node 存储乐理标识 (Parser 负责标准化)
+
+AST Node 包含一个枚举或常量，表示**乐理意图**，而不是用户输入或视觉符号：
+
+```python
+# AST Node (例如 ScoreUnitNode)
+class ScoreUnitNode(BaseModel):
+    # 存储乐理标识（不再是原始输入 '/py'）
+    bottom_marker_intent: MarkerIntent = MarkerIntent.ARPEGGIO 
+    # MarkerIntent.ARPEGGIO, MarkerIntent.TREMOLO, etc.
+```
+
+#### 2\. LayoutMetrics 存储 **乐理标识 $\to$ Render Command Type** 映射
+
+LayoutMetrics 负责将乐理标识转换为 Layout Pass 所需的 **Render Command 类型**：
+
+```python
+# LayoutMetrics 配置
+class LayoutMetrics:
+    def __init__(self, config):
+        # 存储乐理意图到渲染类型的映射
+        self.intent_to_command_map = config['marker_map'] 
+        # {'ARPEGGIO': 'DOT_MARKER', 'TREMOLO': 'LINE_MARKER'} 
+        # ...
+
+    def get_command_type(self, intent: str) -> str:
+        return self.intent_to_command_map.get(intent)
+```
+
+#### 3\. Layout Pass 行为 (查询 LayoutMetrics)
+
+Layout Pass 根据 AST 的意图查询 LayoutMetrics，然后调度指令：
+
+```python
+def _layout_bottom_marker(self, node: ScoreUnitNode, unit_x):
+    intent = node.bottom_marker_intent # 获取乐理意图 "ARPEGGIO"
+
+    # 1. 查询意图/指令类型
+    command_type = self.layout_metrics.get_command_type(intent) # 结果是 "DOT_MARKER"
+
+    if not command_type:
+        return
+
+    # 2. 计算几何位置 (不变)
+    bottom_mod_pos = self._calculate_position(...)
+    
+    # 3. 调度指令 (基于查询结果)
+    if command_type == "DOT_MARKER":
+        self.builder.add_dot_marker(position=bottom_mod_pos)
+    elif command_type == "LINE_MARKER":
+        self.builder.add_line_marker(position=bottom_mod_pos)
+    # ...
+```
+
+### 总结
+
+  * **AST 纯净：** 无论想用圆点、方块还是其他符号来表示某个含义，`node.bottom_marker_intent` 永远都是 `ARPEGGIO`。
+  * **解耦：** 想修改符号：
+      * 只需修改 `LayoutMetrics` 中的映射：`'ARPEGGIO': 'LINE_MARKER'`。
+      * **不需要修改 Parser 代码。**
+      * **不需要修改 Layout Pass 代码。** (它只需要在 `if/elif` 中处理所有可能的 `command_type`)。
+
+实现高程度的配置化和职责分离。

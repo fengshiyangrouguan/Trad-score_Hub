@@ -35,6 +35,9 @@ bottom_rhythm_modifier = "_handle_bottom_rhythm_modifier"
 "/y" = 2.0
 "/h" = 0.5
 "/hh" = 0.5
+"/ls" = 0.1
+"/le" = 0.9
+"/f" = 1.0
 
 
 # =========================================
@@ -99,7 +102,7 @@ semantic = "bottom_rhythm_modifier"
 
 [[TOKENS]]
 name = "TIME_MOD"
-pattern = "^(\\/y|\\/hh|\\/h)"
+pattern = "^(\\/y|\\/hh|\\/h|\\/ls|\\/le|\\/f)"
 flags = "IGNORECASE"
 semantic = "time_modifier"
 

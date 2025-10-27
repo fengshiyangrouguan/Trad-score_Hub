@@ -13,8 +13,8 @@ class PipaTheoryAnalysisPass(BaseVisitor):
     核心逻辑：基于乐拍计数（beats）和规则（如四分音符推导）。
     """
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self,context):
+        super().__init__(context)
         current_file = Path(__file__).resolve()
         config_path = current_file.parent.parent / "config" / "pipa_map.toml"
 
@@ -52,6 +52,7 @@ class PipaTheoryAnalysisPass(BaseVisitor):
                 
         # 3. 继续遍历子节点以进行后续的语义分析
         self.generic_visit(node)
+        self.context.node = node
         
     def visit_SectionNode(self, node: SectionNode):
         """
@@ -64,10 +65,11 @@ class PipaTheoryAnalysisPass(BaseVisitor):
         """
         在 ScoreUnit 级别进行实际的时值注入。
         """
-        if node.time_modifier != None:
-            node.time *= self.duration_map[node.time_modifier]
-        if node.time_modifier == "/hh":
-            node.time_modifier = None
+        for mod in node.time_modifier:
+            if mod != None:
+                node.time *= self.duration_map[mod]
+            if mod in ("/hh", "/le"):
+                node.time_modifier = None
 
         # print(f"   [Unit] Inferred time at beat {self.current_beat_index}: {node.main_character}")
         return

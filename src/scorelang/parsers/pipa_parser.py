@@ -154,7 +154,7 @@ class PipaParser(BaseParser):
     def _handle_time_modifier(self, token):
         """处理 TIME_MOD (/y, /h, /hh) 专用于 time_multiplier 字段"""
         if self.current_unit:
-            self.current_unit.time_modifier = token["value"]
+            self.current_unit.time_modifier.append(token["value"])
 
 
     def _handle_small_modifier(self, token):

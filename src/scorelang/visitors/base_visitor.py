@@ -2,18 +2,19 @@
 from abc import ABC,abstractmethod
 
 from ..ast_score.nodes import Node
-
+from ..core.pipeline_context import PipelineContext
 class BaseVisitor(ABC):
     """
     抽象 Visitor 基类。
     提供默认递归遍历逻辑（generic_visit）。
     """
     @abstractmethod
-    def __init__(self):
+    def __init__(self, context:PipelineContext):
         """强制子类初始化，用于设置 Pass 的状态和上下文。"""
+        self.context = context
         pass
 
-    def visit(self, node: Node):
+    def visit(self, node:Node):
         """
         外部入口点：启动双重分派。
         将控制权交给 Node 上的 accept 方法。

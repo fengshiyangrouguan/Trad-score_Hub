@@ -2,9 +2,10 @@
 
 from typing import Any, Dict, Optional
 from pathlib import Path
-from src.scorelang.parser_factory import ParserFactory
-from src.scorelang.visitor_manager import VisitorManager
+from src.scorelang.core.parser_factory import ParserFactory
+from src.scorelang.core.visitor_manager import VisitorManager
 from src.scorelang.ast_score.nodes import ScoreDocumentNode
+from src.scorelang.core.pipeline_context import PipelineContext
 
 ROOT_PATH = str(Path(__file__).parent.parent.parent.parent / "new_system_test.png")
 
@@ -17,6 +18,7 @@ class ScoreService:
     def __init__(self):
         # 初始化时加载配置，以便后续使用
         self.visitor_manager = VisitorManager
+        self.context = PipelineContext()
 
     def process_score(self, score_text: str, score_type: str) -> ScoreDocumentNode:
         """
@@ -36,15 +38,17 @@ class ScoreService:
         
         # 委托给 VisitorManager 运行所有配置好的 Pass
         print("开始运行visit")
+
+        self.context.node = ast_root
         VisitorManager.run_pipeline(
-            ast_root, 
+            self.context, 
             score_type, 
         )
 
-        # 返回语义完整的 AST 根节点
-        return ast_root
+        # 返回上下文
+        return self.context
 
-    def render_score(self, ast_root: ScoreDocumentNode, score_type: str, format: str, save_dir: str = ROOT_PATH) -> Any:
+    def render_score(self, context, score_type: str, format: str, save_dir: str = ROOT_PATH) -> Any:
         """
         渲染方法：查找正确的 Renderer，生成最终格式的输出。
         """
@@ -60,16 +64,16 @@ class ScoreService:
         try:
             # 实际项目中，这里会使用反射 (importlib)
             # 占位：假设我们只关心 TextRenderer
-            if format == 'pillow':
-                from src.scorelang.renderers.pipa_pillow_renderer import PipaPillowRenderer
-                RendererClass = PipaPillowRenderer
+            if format == 'image':
+                from src.scorelang.renderers.pipa_image_renderer import PipaImageRenderer
+                RendererClass = PipaImageRenderer
             else:
                  # 模拟动态加载失败
                 # raise NotImplementedError(f"Renderer for {renderer_path} not implemented.")
                 raise NotImplementedError(f"Renderer not implemented.")
             
-            renderer = RendererClass()
-            renderer.render(ast_root,save_dir)
+            renderer = RendererClass(context)
+            renderer.render(save_dir)
             return
             
         except (ImportError, AttributeError, NotImplementedError) as e:

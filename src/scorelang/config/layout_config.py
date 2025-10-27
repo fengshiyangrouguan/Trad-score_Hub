@@ -1,8 +1,20 @@
 from dataclasses import dataclass, field
 from typing import Tuple, Dict
 
+
+
 @dataclass
 class PipaLayoutConfig:
+
+    page_dimensions:Tuple[float, float] = (2160, 1280)
+    margin: Dict[str, float] = field(default_factory=lambda: {
+        "top": 60, 
+        "bottom": 60, 
+        "left": 60, 
+        "right": 60
+    })
+
+
     # --- 字体配置参数 ---
     
     # 字体大小
@@ -82,7 +94,8 @@ class PipaLayoutConfig:
         **关键：返回你系统中中文字体文件的绝对路径。**
         你需要根据你的开发环境来设置这个路径！
         """
-        if font_type == 'score':
-             return r"E:\project\Trad-score_Hub\pipa.ttf" # 假设主要内容字体
-        return r"E:\project\Trad-score_Hub\text.ttf"   # 假设标题字体
+        if font_type in ('main_char', 'small_char'):
+             return r"E:\project\Trad-score_Hub\data\fonts\pipa.ttf" # 假设主要内容字体
+        else:
+            return r"E:\project\Trad-score_Hub\data\fonts\text.ttf"   # 假设标题字体
         
