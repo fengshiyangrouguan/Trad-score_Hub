@@ -7,6 +7,7 @@ from src.scorelang.core.visitor_manager import VisitorManager
 from src.scorelang.ast_score.nodes import ScoreDocumentNode
 from src.scorelang.core.pipeline_context import PipelineContext
 
+
 ROOT_PATH = str(Path(__file__).parent.parent.parent.parent / "new_system_test.png")
 
 class ScoreService:
@@ -20,16 +21,18 @@ class ScoreService:
         self.visitor_manager = VisitorManager
         self.context = PipelineContext()
 
-    def process_score(self, score_text: str, score_type: str) -> ScoreDocumentNode:
+    def process_score(self, score_context: PipelineContext, score_type: str) -> ScoreDocumentNode:
         """
         核心管道方法：解析文本，运行所有语义 Visitor，返回处理后的 AST。
         """
+        self.context = score_context
         score_type = score_type.lower()
         
         # --- 1. 解析阶段 ---
         try:
             parser = ParserFactory.get_parser(score_type)
             # 处理元输入文本
+            score_text = self.context.raw_score_text
             ast_root: ScoreDocumentNode = parser.parse(score_text)
         except Exception as e:
             raise RuntimeError(f"Parsing failed for {score_type} score: {e}")

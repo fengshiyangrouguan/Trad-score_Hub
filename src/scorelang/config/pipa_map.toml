@@ -116,7 +116,7 @@ group1 = true
 
 [[TOKENS]]
 name = "MAIN_CHAR"
-pattern = "^(一|二|三|四|五|六|七|八|九|十|匕|卜|敷|乙|言|合|斗|乞|之|也|丁)"
+pattern = "^(一|二|三|四|五|六|七|八|九|十|匕|卜|敷|乙|言|合|斗|乞|之|也|丁|引)"
 semantic = "main_char"
 flags = "IGNORECASE"
 

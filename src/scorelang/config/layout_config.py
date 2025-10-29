@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Tuple, Dict
-
+from pathlib import Path
 
 
 @dataclass
@@ -94,8 +94,16 @@ class PipaLayoutConfig:
         **关键：返回你系统中中文字体文件的绝对路径。**
         你需要根据你的开发环境来设置这个路径！
         """
+        root = self.get_project_root()
         if font_type in ('main_char', 'small_char'):
-             return r"E:\project\Trad-score_Hub\data\fonts\pipa.ttf" # 假设主要内容字体
+             path = str(root / "data" / "fonts" / "pipa.ttf")
+             return path
         else:
-            return r"E:\project\Trad-score_Hub\data\fonts\text.ttf"   # 假设标题字体
-        
+            path = str(root / "data" / "fonts" / "text.ttf")
+            return path
+
+    def get_project_root(self):
+        # 假设这个函数定义在 main_windows.py 附近
+        current_file_dir = Path(__file__).resolve().parent
+        # 从 /src/frontend/ 向上两级到达项目根目录 /
+        return current_file_dir.parent.parent.parent

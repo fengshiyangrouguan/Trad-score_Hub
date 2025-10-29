@@ -1,6 +1,7 @@
 # src/scorelang/pipeline_context.py
 
 from typing import Dict, Any, List, Optional
+from ..ast_score.nodes import ScoreDocumentNode
 # 假设这些依赖类已在其他模块定义
 
 
@@ -25,7 +26,10 @@ class PipelineContext:
             style_manager: 负责所有视觉表现属性和符号字符映射。
             layout_metrics: 负责所有几何约束、尺寸常量和乐理意图映射。
         """
-        self.node = node
+        # --- 原始输入文本 ---
+        self.raw_score_text: str = ""
+        # --- 当前处理的 AST 节点 ---
+        self.node: ScoreDocumentNode = node
         # --- 依赖配置 (全局共享，只读) ---
         self.layout_config = None
         
@@ -48,6 +52,9 @@ class PipelineContext:
         """记录管道运行中的信息或警告。"""
         self.log_messages.append(message)
 
+    def set_raw_text(self, text: str):
+        """设置原始输入文本。"""
+        self.raw_score_text = text
 # ----------------------------------------------------------------------
 # 外部使用示例 (在 ScoreService 或主程序中):
 # ----------------------------------------------------------------------

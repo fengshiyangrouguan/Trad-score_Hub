@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from src.backend.app.services import ScoreService
 from src.scorelang.ast_score.nodes import ScoreDocumentNode
+from src.scorelang.core.pipeline_context import PipelineContext
 
 
 def main():
@@ -235,10 +236,11 @@ def main():
 
     # 初始化解析器
     service = ScoreService()
-
+    context: PipelineContext = PipelineContext()
+    context.set_raw_text(sample_score_text_2)
     # 解析成 AST
-    context = service.process_score(sample_score_text_2,"pipa")
-    score_document = context.node
+    context = service.process_score(context,"pipa")
+    score_document:ScoreDocumentNode = context.node
     # 3.输出到控制台
     print("=== AST ===")
     #print(score_document)
